@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" 
+        href="{{ url_for('static', filename='img/fav/fav.ico') }}?v=2" 
+        type="image/x-icon">
+  <link class="apple-touch-icon" 
+        sizes="180x180" 
+        href="{{ url_for('static', filename='img/fav/apple-touch-icon.png') }}">
+  <link rel="icon" 
+        type="image/png" 
+        sizes="32x32" 
+        href="{{ url_for('static', filename='img/fav/favicon-32x32.png') }}">
+  <link rel="icon" 
+        type="image/png" 
+        sizes="16x16" 
+        href="{{ url_for('static', filename='img/fav/favicon-16x16.png') }}">
+  <link rel="stylesheet" 
+        href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <title>{% block title %}YaCut - укоротитель ссылок{% endblock %}</title>
+</head>
+<body class="d-flex flex-column h-100">
+  {% include 'header.html' %}
+
+  <main class="flex-shrink-0">
+    <div class="container mt-3">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category if category != 'error' else 'danger' }} text-center small py-2" 
+                 role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    {% block content %}{% endblock content %}
+  </main>
+
+  {% include 'footer.html' %}
+  <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

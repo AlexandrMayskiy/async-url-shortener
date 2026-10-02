@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}YaCut - укоротитель ссылок{% endblock %}
+
+{% block content %}
+<section class="container my-5 px-4">
+  <h1 class="text-center"><span style="color:red">Ya</span>Cut</h1>
+  <p class="text-center my-4">
+    Создайте короткую ссылку автоматически или предложите свой вариант
+  </p>
+
+  <div class="row justify-content-center my-3">
+    <div class="col-sm-6 col-md-5">
+      <form method="POST" novalidate>
+        {{ form.csrf_token }}
+        
+        <div class="mb-3">
+          {{ form.original_link(
+              class="form-control form-control-lg py-2 mb-1", 
+              placeholder="Длинная ссылка"
+          ) }}
+          {% if form.original_link.errors %}
+            {% for error in form.original_link.errors %}
+              <p class="text-start mt-1">
+                <span style="color:red; font-size: 0.9rem;">{{ error }}</span>
+              </p>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.custom_id(
+              class="form-control form-control-lg py-2 mb-1", 
+              placeholder="Ваш вариант короткой ссылки"
+          ) }}
+          {% if form.custom_id.errors %}
+            {% for error in form.custom_id.errors %}
+              <p class="text-start mt-1">
+                <span style="color:red; font-size: 0.9rem;">{{ error }}</span>
+              </p>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <div class="text-start">
+          {{ form.submit(class="btn btn-primary px-4", value="Создать") }}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if short_url %}
+    <div class="row justify-content-center mt-4">
+      <div class="col-sm-6 col-md-5 text-center">
+        <p class="fs-5 mb-1 text-dark">
+          Ваша новая ссылка готова:
+        </p>
+        <a href="{{ short_url }}" 
+           target="_blank" 
+           class="fw-bold fs-4 text-decoration-none text-primary">
+          {{ short_url }}
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
