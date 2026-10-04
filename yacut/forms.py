@@ -34,7 +34,7 @@ class URLMapForm(FlaskForm):
                 raise ValidationError(
                     'Указано недопустимое имя для короткой ссылки'
                 )
-            if URLMap.query.filter_by(short=field.data).first():
+            if URLMap.get(field.data):
                 raise ValidationError(
                     'Предложенный вариант короткой ссылки уже существует.'
                 )
