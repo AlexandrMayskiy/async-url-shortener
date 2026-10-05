@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 import random
 
 from flask import url_for
-from wtforms import ValidationError
 
 from . import db
 from .constants import (
@@ -39,7 +38,7 @@ class URLMap(db.Model):
             )
             if not URLMap.get(short_id):
                 return short_id
-        raise RuntimeError('Превышено количество попыток генерации ID.')
+        raise APIError('Превышено количество попыток генерации ID.')
 
     @classmethod
     def get(cls, short_id):
@@ -47,17 +46,17 @@ class URLMap(db.Model):
         return cls.query.filter_by(short=short_id).first()
 
     @classmethod
-    def create(cls, original, custom_id=None, is_api=True):
+    def create(cls, original, custom_id=None):
         """Валидирует данные, сохраняет в БД и возвращает объект."""
         if custom_id:
             if (len(custom_id) > MAX_SHORT_LENGTH or
                     not re.match(SHORT_LINK_REGEX, custom_id)):
-                msg = 'Указано недопустимое имя для короткой ссылки'
-                raise APIError(msg) if is_api else ValidationError(msg)
+                raise APIError('Указано недопустимое имя для короткой ссылки')
 
             if cls.get(custom_id):
-                msg = 'Предложенный вариант короткой ссылки уже существует.'
-                raise APIError(msg) if is_api else ValidationError(msg)
+                raise APIError(
+                    'Предложенный вариант короткой ссылки уже существует.'
+                )
         else:
             custom_id = cls.get_unique_short_id()
 
@@ -66,13 +65,17 @@ class URLMap(db.Model):
         db.session.commit()
         return url_map
 
+    def get_short_url(self):
+        """Формирует и возвращает полный короткий URL-адрес."""
+        return url_for(
+            'redirect_view',
+            short_id=self.short,
+            _external=True
+        )
+
     def to_dict(self):
         """Сериализует объект в словарь с полным URL."""
         return {
             'url': self.original,
-            'short_link': url_for(
-                'redirect_view',
-                short_id=self.short,
-                _external=True
-            )
+            'short_link': self.get_short_url()
         }

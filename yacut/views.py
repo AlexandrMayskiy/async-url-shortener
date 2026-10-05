@@ -7,10 +7,10 @@ from flask import (
     current_app, flash, redirect, render_template, request
 )
 from werkzeug.utils import secure_filename
-from wtforms import ValidationError
 
 from . import app
 from .constants import DEFAULT_API_URL
+from .exceptions import APIError
 from .forms import FileUploadForm, URLMapForm
 from .models import URLMap
 
@@ -80,16 +80,15 @@ def index_view():
         try:
             url_map = URLMap.create(
                 original=form.original_link.data,
-                custom_id=form.custom_id.data,
-                is_api=False
+                custom_id=form.custom_id.data
             )
             return render_template(
                 'index.html',
                 form=form,
-                short_url=url_map.to_dict()['short_link']
+                short_url=url_map.get_short_url()
             )
-        except ValidationError as error:
-            flash(str(error), 'danger')
+        except APIError as error:
+            flash(error.message, 'danger')
 
     return render_template('index.html', form=form)
 
@@ -144,13 +143,17 @@ def upload_view():
 
         short_urls = []
         for filename, long_link in zip(original_filenames, long_links):
-            url_map = URLMap.create(original=long_link, is_api=False)
-            short_urls.append({
-                'name': filename,
-                'url': url_map.to_dict()['short_link']
-            })
+            try:
+                url_map = URLMap.create(original=long_link)
+                short_urls.append({
+                    'name': filename,
+                    'url': url_map.get_short_url()
+                })
+            except APIError as error:
+                flash(
+                    f'Ошибка для файла {filename}: {error.message}', 'danger'
+                )
 
-        flash('Файлы успешно загружены и сокращены!', 'success')
         return render_template(
             'upload.html',
             form=form,

@@ -17,10 +17,15 @@ def create_short_id():
     if 'url' not in data or not data['url']:
         raise APIError('"url" является обязательным полем!')
 
-    url_map = URLMap.create(
-        original=data['url'],
-        custom_id=data.get('custom_id')
-    )
+    try:
+        url_map = URLMap.create(
+            original=data['url'],
+            custom_id=data.get('custom_id')
+        )
+    except APIError as error:
+        raise error
+    except Exception as error:
+        raise APIError(str(error), HTTPStatus.BAD_REQUEST)
 
     return jsonify(url_map.to_dict()), HTTPStatus.CREATED
 
